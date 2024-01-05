@@ -20,25 +20,25 @@ export default function mountPaymentsEndpoints(router: Router) {
 
     // find the incomplete order
     const app = req.app;
-    const orderCollection = app.locals.orderCollection;
-    const order = await orderCollection.findOne({ pi_payment_id: paymentId });
+    //const orderCollection = app.locals.orderCollection;
+    //const order = await orderCollection.findOne({ pi_payment_id: paymentId });
 
     // order doesn't exist 
-    if (!order) {
+    /*if (!order) {
       return res.status(400).json({ message: "Order not found" });
-    }
+    }*/
 
     // check the transaction on the Pi blockchain
     const horizonResponse = await axios.create({ timeout: 20000 }).get(txURL);
     const paymentIdOnBlock = horizonResponse.data.memo;
 
     // and check other data as well e.g. amount
-    if (paymentIdOnBlock !== order.pi_payment_id) {
+    /*if (paymentIdOnBlock !== order.pi_payment_id) {
       return res.status(400).json({ message: "Payment id doesn't match." });
-    }
+    }*/
 
     // mark the order as paid
-    await orderCollection.updateOne({ pi_payment_id: paymentId }, { $set: { txid, paid: true } });
+    //await orderCollection.updateOne({ pi_payment_id: paymentId }, { $set: { txid, paid: true } });
 
     // let Pi Servers know that the payment is completed
     await platformAPIClient.post(`/v2/payments/${paymentId}/complete`, { txid });
@@ -54,15 +54,15 @@ export default function mountPaymentsEndpoints(router: Router) {
     const app = req.app;
 
     const paymentId = req.body.paymentId;
-    const currentPayment = await platformAPIClient.get(`/v2/payments/${paymentId}`);
-    const orderCollection = app.locals.orderCollection;
+    //const currentPayment = await platformAPIClient.get(`/v2/payments/${paymentId}`);
+    //const orderCollection = app.locals.orderCollection;
 
     /* 
       implement your logic here 
       e.g. creating an order record, reserve an item if the quantity is limited, etc...
     */
 
-    await orderCollection.insertOne({
+    /*await orderCollection.insertOne({
       pi_payment_id: paymentId,
       product_id: currentPayment.data.metadata.productId,
       user: req.session.currentUser.uid,
@@ -70,7 +70,7 @@ export default function mountPaymentsEndpoints(router: Router) {
       paid: false,
       cancelled: false,
       created_at: new Date()
-    });
+    });*/
 
     // let Pi Servers know that you're ready
     await platformAPIClient.post(`/v2/payments/${paymentId}/approve`);
@@ -83,14 +83,14 @@ export default function mountPaymentsEndpoints(router: Router) {
 
     const paymentId = req.body.paymentId;
     const txid = req.body.txid;
-    const orderCollection = app.locals.orderCollection;
+    //const orderCollection = app.locals.orderCollection;
 
     /* 
       implement your logic here
       e.g. verify the transaction, deliver the item to the user, etc...
     */
 
-    await orderCollection.updateOne({ pi_payment_id: paymentId }, { $set: { txid: txid, paid: true } });
+    //await orderCollection.updateOne({ pi_payment_id: paymentId }, { $set: { txid: txid, paid: true } });
 
     // let Pi server know that the payment is completed
     await platformAPIClient.post(`/v2/payments/${paymentId}/complete`, { txid });
@@ -102,14 +102,14 @@ export default function mountPaymentsEndpoints(router: Router) {
     const app = req.app;
 
     const paymentId = req.body.paymentId;
-    const orderCollection = app.locals.orderCollection;
+    //const orderCollection = app.locals.orderCollection;
 
     /*
       implement your logic here
       e.g. mark the order record to cancelled, etc...
     */
 
-    await orderCollection.updateOne({ pi_payment_id: paymentId }, { $set: { cancelled: true } });
+    //await orderCollection.updateOne({ pi_payment_id: paymentId }, { $set: { cancelled: true } });
     return res.status(200).json({ message: `Cancelled the payment ${paymentId}` });
   })
 }

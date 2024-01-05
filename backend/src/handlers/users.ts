@@ -7,7 +7,7 @@ export default function mountUserEndpoints(router: Router) {
   // handle the user auth accordingly
   router.post('/signin', async (req, res) => {
     const auth = req.body.authResult;
-    const userCollection = req.app.locals.userCollection;
+    //const userCollection = req.app.locals.userCollection;
 
     try {
       // Verify the user's access token with the /me endpoint:
@@ -18,9 +18,9 @@ export default function mountUserEndpoints(router: Router) {
       return res.status(401).json({error: "Invalid access token"}) 
     }
 
-    let currentUser = await userCollection.findOne({ uid: auth.user.uid });
+    //let currentUser = await userCollection.findOne({ uid: auth.user.uid });
 
-    if (currentUser) {
+    /*if (currentUser) {
       await userCollection.updateOne({
         _id: currentUser._id
       }, {
@@ -36,10 +36,13 @@ export default function mountUserEndpoints(router: Router) {
         accessToken: auth.accessToken
       });
       
-      currentUser = await userCollection.findOne(insertResult.insertedId);
-    }
+      let currentUser = await userCollection.findOne(insertResult.insertedId);
+    }*/
 
-    req.session.currentUser = currentUser;
+    req.session.currentUser = { _id: auth.user.id, username: auth.user.username,
+      uid: auth.user.uid,
+      roles: auth.user.roles,
+      accessToken: auth.accessToken } // currentUser;
 
     return res.status(200).json({ message: "User signed in" });
   });

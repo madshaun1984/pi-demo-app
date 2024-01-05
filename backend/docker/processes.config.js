@@ -3,7 +3,7 @@
 
 module.exports = {
   apps: [{
-    name: "demoapp-backend",
+    name: "plinko-game-backend",
     script: "/usr/src/app/build/index.js",
     exec_mode: "cluster",
     instances: 4,

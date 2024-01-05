@@ -5,8 +5,8 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import logger from 'morgan';
-import MongoStore from 'connect-mongo';
-import { MongoClient } from 'mongodb';
+//import MongoStore from 'connect-mongo';
+//import { MongoClient } from 'mongodb';
 import env from './environments';
 import mountPaymentsEndpoints from './handlers/payments';
 import mountUserEndpoints from './handlers/users';
@@ -16,7 +16,7 @@ import mountUserEndpoints from './handlers/users';
 // https://stackoverflow.com/questions/65108033/property-user-does-not-exist-on-type-session-partialsessiondata#comment125163548_65381085
 import "./types/session";
 
-const dbName = env.mongo_db_name;
+/*const dbName = env.mongo_db_name;
 const mongoUri = `mongodb://${env.mongo_host}/${dbName}`;
 const mongoClientOptions = {
   authSource: "admin",
@@ -24,7 +24,7 @@ const mongoClientOptions = {
     username: env.mongo_user,
     password: env.mongo_password,
   },
-}
+}*/
 
 
 //
@@ -55,15 +55,22 @@ app.use(cookieParser());
 
 // Use sessions:
 app.use(session({
+  name: '.digitaldungeon.co.uk',
   secret: env.session_secret,
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({
+  cookie : {
+    domain: '.digitaldungeon.co.uk',
+    secure: true,
+    httpOnly: true,
+    sameSite: 'none'
+    }
+  /*store: MongoStore.create({
     mongoUrl: mongoUri,
     mongoOptions: mongoClientOptions,
     dbName: dbName,
     collectionName: 'user_sessions'
-  }),
+  }),*/
 }));
 
 
@@ -89,8 +96,8 @@ app.get('/', async (_, res) => {
 
 // III. Boot up the app:
 
-app.listen(8000, async () => {
-  try {
+app.listen(8080, async () => {
+  /*try {
     const client = await MongoClient.connect(mongoUri, mongoClientOptions)
     const db = client.db(dbName);
     app.locals.orderCollection = db.collection('orders');
@@ -98,8 +105,8 @@ app.listen(8000, async () => {
     console.log('Connected to MongoDB on: ', mongoUri)
   } catch (err) {
     console.error('Connection to MongoDB failed: ', err)
-  }
+  }*/
 
-  console.log('App platform demo app - Backend listening on port 8000!');
+  console.log('App platform demo app - Backend listening on port 8080!');
   console.log(`CORS config: configured to respond to a frontend hosted on ${env.frontend_url}`);
 });
