@@ -53,6 +53,9 @@ app.use(cors({
 // Handle cookies 🍪
 app.use(cookieParser());
 
+// Set trust proxy to enable "secure" cookies
+app.set('trust proxy', 1)
+
 // Use sessions:
 app.use(session({
   name: '.digitaldungeon.co.uk',
@@ -60,10 +63,11 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie : {
-    domain: '.digitaldungeon.co.uk',
-    secure: true,
+    domain: 'digitaldungeon.co.uk',
+    secure: 'auto',
     httpOnly: true,
-    sameSite: 'none'
+    sameSite: 'none' as const,
+    path: '/'
     }
   /*store: MongoStore.create({
     mongoUrl: mongoUri,
@@ -95,7 +99,6 @@ app.get('/', async (_, res) => {
 
 
 // III. Boot up the app:
-
 app.listen(8080, async () => {
   /*try {
     const client = await MongoClient.connect(mongoUri, mongoClientOptions)
@@ -107,6 +110,7 @@ app.listen(8080, async () => {
     console.error('Connection to MongoDB failed: ', err)
   }*/
 
-  console.log('App platform demo app - Backend listening on port 8080!');
+  console.log('App platform demo app - Backend listening on port 443!');
   console.log(`CORS config: configured to respond to a frontend hosted on ${env.frontend_url}`);
+  
 });
