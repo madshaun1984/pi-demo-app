@@ -3,9 +3,32 @@ import { Router } from "express";
 import platformAPIClient from "../services/platformAPIClient";
 import "../types/session";
 
+interface PaymentDTO {
+  amount: number
+  user_uid: string
+  created_at: string
+  identifier: string
+  metadata: Object
+  memo: string
+  status: {
+    developer_approved: boolean
+    transaction_verified: boolean
+    developer_completed: boolean
+    cancelled: boolean
+    user_cancelled: boolean
+  }
+  to_address: string
+  transaction: null | {
+    txid: string
+    verified: boolean
+    _link: string
+  }
+}
+
 export default function mountPaymentsEndpoints(router: Router) {
   // handle the incomplete payment
   router.post('/incomplete', async (req, res) => {
+    try {
     const payment = req.body.payment;
     const paymentId = payment.identifier;
     const txid = payment.transaction && payment.transaction.txid;
@@ -43,10 +66,16 @@ export default function mountPaymentsEndpoints(router: Router) {
     // let Pi Servers know that the payment is completed
     await platformAPIClient.post(`/v2/payments/${paymentId}/complete`, { txid });
     return res.status(200).json({ message: `Handled the incomplete payment ${paymentId}` });
+  }
+  catch(error) {
+    console.debug(error)
+    return res.status(500).json({ Error: `${error}`});
+  }
   });
 
   // approve the current payment
   router.post('/approve', async (req, res) => {
+    try {
     if (!req.session.currentUser) {
       return res.status(401).json({ error: 'unauthorized', message: "User needs to sign in first" });
     }
@@ -75,10 +104,16 @@ export default function mountPaymentsEndpoints(router: Router) {
     // let Pi Servers know that you're ready
     await platformAPIClient.post(`/v2/payments/${paymentId}/approve`);
     return res.status(200).json({ message: `Approved the payment ${paymentId}` });
+  }
+  catch(error) {
+    console.debug(error)
+    return res.status(500).json({ Error: `${error}`});
+  }
   });
 
   // complete the current payment
   router.post('/complete', async (req, res) => {
+    try {
     const app = req.app;
 
     const paymentId = req.body.paymentId;
@@ -93,12 +128,19 @@ export default function mountPaymentsEndpoints(router: Router) {
     //await orderCollection.updateOne({ pi_payment_id: paymentId }, { $set: { txid: txid, paid: true } });
 
     // let Pi server know that the payment is completed
-    await platformAPIClient.post(`/v2/payments/${paymentId}/complete`, { txid });
-    return res.status(200).json({ message: `Completed the payment ${paymentId}` });
+    const { data } = await platformAPIClient.post(`/v2/payments/${paymentId}/complete`, { txid });
+    const paymentDto: PaymentDTO = data 
+    return res.status(200).json(paymentDto);
+    }
+    catch(error) {
+      console.debug(error)
+      return res.status(500).json({ Error: `${error}`});
+    }
   });
 
   // handle the cancelled payment
   router.post('/cancelled_payment', async (req, res) => {
+    try {
     const app = req.app;
 
     const paymentId = req.body.paymentId;
@@ -111,5 +153,10 @@ export default function mountPaymentsEndpoints(router: Router) {
 
     //await orderCollection.updateOne({ pi_payment_id: paymentId }, { $set: { cancelled: true } });
     return res.status(200).json({ message: `Cancelled the payment ${paymentId}` });
+  }
+  catch(error) {
+    console.debug(error)
+    return res.status(500).json({ Error: `${error}`});
+  }
   })
 }
